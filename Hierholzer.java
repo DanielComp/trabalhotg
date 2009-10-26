@@ -1,7 +1,5 @@
 import java.util.ArrayList;
 
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.ParseException;
-
 public class Hierholzer {
 	
 	static boolean eConexo(Grafo g){
@@ -11,7 +9,6 @@ public class Hierholzer {
 		
 		do{
 			for(int i: g.graph.get(fecho.get(n)).adjacentes){
-				System.out.println("--" + i);
 				if(!fecho.contains(i))
 					fecho.add(i);
 			}
@@ -28,9 +25,6 @@ public class Hierholzer {
 		ArrayList<Integer> esgotados = new ArrayList<Integer>();
 		ArrayList<Adj> grafo = new ArrayList<Adj>();
 
-		System.out.println(g.graph.size());
-		System.out.println(grafo.size());
-		System.out.println("----");
 		for(Adj j: g.graph){
 			Adj j2 = new Adj();
 			j2.adjacentes = (ArrayList<Integer>) j.adjacentes.clone();
@@ -70,7 +64,5 @@ public class Hierholzer {
 		
 		return caminho;
 	}
-
-
 
 }
