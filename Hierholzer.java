@@ -1,8 +1,10 @@
 import java.util.ArrayList;
 
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.ParseException;
+
 public class Hierholzer {
 	
-	static boolean conexo(Grafo g){
+	static boolean eConexo(Grafo g){
 		int n=0;
 		ArrayList<Integer> fecho = new ArrayList<Integer>();
 		fecho.add(0);
@@ -31,8 +33,9 @@ public class Hierholzer {
 		System.out.println("----");
 		for(Adj j: g.graph){
 			Adj j2 = new Adj();
-			j2.adjacentes = (ArrayList<Integer>)j.adjacentes.clone();
+			j2.adjacentes = (ArrayList<Integer>) j.adjacentes.clone();
 			j2.vertice = j.vertice;
+			
 			grafo.add(j2);
 		}
 				
@@ -68,18 +71,6 @@ public class Hierholzer {
 		return caminho;
 	}
 
-	public static void main(String[] args) {
-		int[][] matriz = {{0,1,0,1,0,0,0,0},{1,0,1,1,1,0,0,0},{0,1,0,0,1,0,0,0},{1,1,0,0,0,1,1,0},{0,1,1,0,0,0,1,1},{0,0,0,1,0,0,1,0},{0,0,0,1,1,1,0,1},{0,0,0,0,1,0,1,0}};
-//		0-1-2
-//		|/ \|
-//		3   4
-//		|\ /|
-//		5-6-7
-		Grafo G = new Grafo(matriz);
 
-		for(Integer v: getCaminho(G))
-			System.out.println(v);
-		System.out.println(conexo(G));
-	}
 
 }
