@@ -1,16 +1,12 @@
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
@@ -21,29 +17,31 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.border.TitledBorder;
 
 import org.apache.commons.collections15.Factory;
 import org.apache.commons.collections15.Transformer;
 
+import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseGraph;
-import edu.uci.ics.jung.graph.util.Pair;
-import edu.uci.ics.jung.visualization.RenderContext;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
+import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 
 public class Main{
 	
 	Graph<Integer, String> gPrincipal;
-	Graph<Integer,String> gPasseio;
+//	Graph<Integer,String> gPasseio;
 
 	VisualizationViewer<Integer,String> vvPrincipal;
-	VisualizationViewer<Integer,String> vvPasseio;
+//	VisualizationViewer<Integer,String> vvPasseio;
 	
 	Factory<Integer> vertexFactory;
 	Factory<String> edgeFactory;
@@ -55,7 +53,8 @@ public class Main{
 	JButton proxBtn;
 	JButton antBtn;
 	JButton playBtn;
-	JPanel grafo1;
+	JButton layoutRedondo;
+	JPanel grafoPanel;
 	JTextField caminhoTxt;
 	JMenuBar menuBar;
 	JMenu modeMenu;
@@ -65,11 +64,12 @@ public class Main{
 	int etapaCaminho;
 	ArrayList<Integer> caminho;
 	
+	
 //	JMenuItem 
 	
 	public Main(){
 		gPrincipal = new SparseGraph<Integer, String>();
-		gPasseio = new SparseGraph<Integer, String>();
+//		gPasseio = new SparseGraph<Integer, String>();
 		//Cria as Factory's
 		vertexFactory = new VertexFactory();
 		edgeFactory = new EdgeFactory();
@@ -77,7 +77,8 @@ public class Main{
 		desenhaJanela();
 	}
 	
-	private void desenhaJanela(){
+	private void criaVV(){
+
 		//Layout usado para o grafo
 		Layout<Integer, String> layout = new StaticLayout<Integer, String>(this.gPrincipal);
 	    layout.setSize(new Dimension(500,500));
@@ -97,7 +98,7 @@ public class Main{
 	        public Stroke transform(String s) {
 	             return new BasicStroke(1.5f);
 	        }
-	    };
+	    };	    	
 
 	    vvPrincipal = new VisualizationViewer<Integer,String>(layout);
 	    vvPrincipal.setDoubleBuffered(true);
@@ -112,6 +113,12 @@ public class Main{
 	    vvPrincipal.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
 	    vvPrincipal.getRenderContext().setEdgeStrokeTransformer(edgeStrokeTransformer);
 		vvPrincipal.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+		vvPrincipal.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line<Integer,String>());
+	}
+	
+	private void desenhaJanela(){
+		
+		criaVV();
 	    	    
 	    EditingModalGraphMouse gm = new EditingModalGraphMouse(vvPrincipal.getRenderContext(), this.vertexFactory, this.edgeFactory);
 	    vvPrincipal.setGraphMouse(gm);
@@ -147,38 +154,47 @@ public class Main{
 		controlePanel.add(playBtn);
 		controlePanel.add(proxBtn);
 		
+		layoutRedondo = new JButton("Layout Redondo");
+		layoutRedondo.addActionListener(new LayoutRedondo());
+		
 		TitledBorder borda3 = new TitledBorder("Opções");
 
 		botoes.add(geraCaminhoBtn);
 		botoes.add(controlePanel);
+		botoes.add(layoutRedondo);
 		botoes.setBorder(borda3);
 		
 		
 		frame.add(botoes,BorderLayout.EAST);
 		
-		grafo1 = new JPanel();
+		grafoPanel = new JPanel();
 		TitledBorder borda2 = new TitledBorder("Grafo Feito");
 		borda2.setTitleColor(Color.BLACK);
 	    borda2.setTitleJustification(2);
-		grafo1.setBorder(borda2);
-		grafo1.add(vvPrincipal);
+		grafoPanel.setBorder(borda2);
+		grafoPanel.add(vvPrincipal);
+		
 		caminhoTxt = new JTextField("Caminho...");
 		caminhoTxt.setEditable(false);
 		caminhoTxt.setBackground(Color.WHITE);
 		
-		frame.add(grafo1, BorderLayout.CENTER);
+		frame.add(grafoPanel, BorderLayout.CENTER);
 		frame.add(caminhoTxt, BorderLayout.SOUTH);
 		
 		menuBar = new JMenuBar();
 		modeMenu = gm.getModeMenu(); // Obtain mode menu from the mouse
-		
 		modeMenu.setText("Modo");
-		modeMenu.setIcon(null); // I'm using this in a main menu
-		modeMenu.setPreferredSize(new Dimension(80,20)); // Change the size
+		modeMenu.setIcon(null);
+		modeMenu.setPreferredSize(new Dimension(80,20));
+		modeMenu.setMnemonic(KeyEvent.VK_M);
 
 		novoMenu = new JMenuItem("Novo");
+		novoMenu.addActionListener(new NovoGrafoListener());
+		novoMenu.setAccelerator( KeyStroke.getKeyStroke( KeyEvent.VK_N, ActionEvent.CTRL_MASK));
+		novoMenu.setMnemonic(KeyEvent.VK_N);
 		grafoMenu = new JMenu("Grafo");
 		grafoMenu.add(novoMenu);
+		grafoMenu.setMnemonic(KeyEvent.VK_G);
 		
 		menuBar.add(grafoMenu);
 		menuBar.add(modeMenu);
@@ -199,28 +215,24 @@ public class Main{
 	class EdgeFactory implements Factory<String> {
 		int countE = 0;
 		public String create() {
-	        return new String("e" + countE++);
+	        return new String("" + countE++);
 	    }
     }
 	
 	class CaminhoListener implements ActionListener{
 		public void actionPerformed(ActionEvent e) {
-			int [][] matriz = new int[gPrincipal.getVertexCount()][gPrincipal.getVertexCount()];
-			for(String aresta: gPrincipal.getEdges()){
-				Pair<Integer> p = gPrincipal.getEndpoints(aresta);
-				matriz[p.getFirst()][p.getSecond()] = 1;
-				matriz[p.getSecond()][p.getFirst()] = 1;
-			}
-			
-			Grafo grafo = new Grafo(matriz);
+			Grafo grafo = new Grafo(gPrincipal);
 			
 			if(Hierholzer.temEuleriano(grafo)){
 				etapaCaminho = 0;
 				proxBtn.setEnabled(true);
 				playBtn.setEnabled(true);
 
-				caminho = Hierholzer.getCaminho(grafo);
-				caminhoTxt.setText("Passeio gerado: " + caminho.toString());
+				caminho = new ArrayList<Integer>();
+				for(int i : Hierholzer.getCaminho(grafo))
+					caminho.add(grafo.getVertice(i));
+				
+				caminhoTxt.setText("Passeio gerado: " + caminho);
 				
 				for(String aresta : gPrincipal.getEdges()){
 					gPrincipal.removeEdge(aresta);
@@ -228,6 +240,13 @@ public class Main{
 				for(int i=0;i<caminho.size()-1;i++){
 					gPrincipal.addEdge(""+i,caminho.get(i),caminho.get(i+1));
 				}
+				
+				DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
+				gm.setMode(DefaultModalGraphMouse.Mode.TRANSFORMING);
+				vvPrincipal.setGraphMouse(gm);
+				
+				modeMenu.setEnabled(false);
+
 				
 				//vvPasseio = vvPrincipal;
 				
@@ -277,6 +296,27 @@ public class Main{
 				etapaCaminho++;
 			}
 		}
+	}
+	
+	class LayoutRedondo implements ActionListener{
+
+		public void actionPerformed(ActionEvent e) {
+			Layout<Integer, String> layout = new CircleLayout<Integer, String>(gPrincipal);
+		    layout.setSize(new Dimension(500,500));
+		    vvPrincipal.setGraphLayout(layout);
+
+			frame.getContentPane().paintAll(frame.getContentPane().getGraphics());
+		}
+		
+	}
+	
+	class NovoGrafoListener implements ActionListener{
+
+		public void actionPerformed(ActionEvent e) {
+			frame.dispose();
+			new Main();
+		}
+		
 	}
 	
 	public static void main(String[] args) {
