@@ -2,7 +2,19 @@ import java.util.ArrayList;
 
 public class Hierholzer {
 	
-	static boolean eConexo(Grafo g){
+	public static boolean temEuleriano(Grafo g){
+		return (grauPar(g) && eConexo(g));
+	}
+	
+	public static boolean grauPar(Grafo g){
+		for(Adj vertice: g.graph){
+			if((vertice.adjacentes.size()%2)!=0)
+				return false; 
+		}
+		return true;
+	}
+	
+	public static boolean eConexo(Grafo g){
 		int n=0;
 		ArrayList<Integer> fecho = new ArrayList<Integer>();
 		fecho.add(0);
@@ -18,7 +30,7 @@ public class Hierholzer {
 		return (g.graph.size()==fecho.size());
 	}
 	
-	static ArrayList<Integer> getCaminho(Grafo g){
+	public static ArrayList<Integer> getCaminho(Grafo g){
 		
 		ArrayList<Integer> caminho = new ArrayList<Integer>();
 		ArrayList<Integer> caminhoTemp = new ArrayList<Integer>();
